@@ -7,8 +7,8 @@ const https = require('https');
 const app = express();
 
 console.log('='.repeat(50));
-console.log('🚀 VOXIOM BOT MANAGER - ULTIMATE v21');
-console.log('🏗️ INSTANT REDEPLOY | SLOT BLOCKING | MULTI-SERVER SUPPORT');
+console.log('🚀 VOXIOM BOT MANAGER - ULTIMATE v22');
+console.log('🏗️ RATE LIMIT PROTECTION | SMART RETRY');
 console.log('='.repeat(50));
 
 app.use(express.json());
@@ -76,12 +76,40 @@ const GAME_MODE_CONFIG = {
     ffa: { name: 'Free For All', urlType: 'experimental' }
 };
 
-// ==================== FIND ENDPOINT ====================
-async function callFindEndpoint(region, gameMode) {
+// Rate limiting tracker
+const findRateLimit = {
+    lastCall: 0,
+    callCount: 0,
+    isBlocked: false,
+    blockUntil: 0
+};
+
+// ==================== FIND ENDPOINT WITH RATE LIMIT PROTECTION ====================
+async function callFindEndpoint(region, gameMode, retryCount = 0) {
     return new Promise((resolve, reject) => {
+        if (findRateLimit.isBlocked && Date.now() < findRateLimit.blockUntil) {
+            const waitTime = Math.ceil((findRateLimit.blockUntil - Date.now()) / 1000);
+            reject(new Error(`Rate limited. Wait ${waitTime} seconds.`));
+            return;
+        }
+        
+        if (Date.now() - findRateLimit.lastCall > 5000) {
+            findRateLimit.callCount = 0;
+        }
+        
+        if (findRateLimit.callCount >= 3 && retryCount === 0) {
+            findRateLimit.isBlocked = true;
+            findRateLimit.blockUntil = Date.now() + 10000;
+            reject(new Error('Rate limit reached. Waiting 10 seconds.'));
+            return;
+        }
+        
+        findRateLimit.lastCall = Date.now();
+        findRateLimit.callCount++;
+        
         const url = `https://voxiom.io/find?region=${region}&game_mode=${gameMode}&version=137`;
         
-        console.log(`   📡 /find request: ${url}`);
+        console.log(`   📡 /find request: ${url} (attempt ${retryCount + 1})`);
         
         const options = {
             headers: {
@@ -98,35 +126,74 @@ async function callFindEndpoint(region, gameMode) {
             
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
+                if (data.trim().startsWith('<') || data.trim().startsWith('<!DOCTYPE')) {
+                    console.log(`   ⚠️ Rate limited - received HTML`);
+                    
+                    if (retryCount < 3) {
+                        const delay = 2000 * (retryCount + 1);
+                        console.log(`   🔄 Retry in ${delay/1000}s...`);
+                        setTimeout(() => {
+                            callFindEndpoint(region, gameMode, retryCount + 1)
+                                .then(resolve)
+                                .catch(reject);
+                        }, delay);
+                    } else {
+                        reject(new Error('Rate limited by Voxiom. Try again later.'));
+                    }
+                    return;
+                }
+                
                 try {
                     const json = JSON.parse(data);
                     if (json && json.tag) {
                         resolve({ success: true, tag: json.tag });
-                    } else if (json && json.success && json.tag) {
-                        resolve({ success: true, tag: json.tag });
                     } else {
-                        const tagMatch = data.match(/\"tag\"\s*:\s*\"([a-zA-Z0-9]+)\"/);
-                        if (tagMatch) {
-                            resolve({ success: true, tag: tagMatch[1] });
-                        } else {
-                            reject(new Error('No tag in response: ' + data.substring(0, 100)));
-                        }
+                        reject(new Error('No tag in response'));
                     }
                 } catch (e) {
-                    reject(new Error('JSON parse error: ' + e.message));
+                    if (retryCount < 3) {
+                        const delay = 2000 * (retryCount + 1);
+                        console.log(`   🔄 Retry in ${delay/1000}s...`);
+                        setTimeout(() => {
+                            callFindEndpoint(region, gameMode, retryCount + 1)
+                                .then(resolve)
+                                .catch(reject);
+                        }, delay);
+                    } else {
+                        reject(new Error('Failed to parse response'));
+                    }
                 }
             });
         });
         
-        req.on('error', (err) => reject(err));
+        req.on('error', (err) => {
+            if (retryCount < 3) {
+                setTimeout(() => {
+                    callFindEndpoint(region, gameMode, retryCount + 1)
+                        .then(resolve)
+                        .catch(reject);
+                }, 2000);
+            } else {
+                reject(err);
+            }
+        });
+        
         req.setTimeout(10000, () => {
             req.destroy();
-            reject(new Error('Request timeout'));
+            if (retryCount < 3) {
+                setTimeout(() => {
+                    callFindEndpoint(region, gameMode, retryCount + 1)
+                        .then(resolve)
+                        .catch(reject);
+                }, 2000);
+            } else {
+                reject(new Error('Request timeout'));
+            }
         });
     });
 }
 
-// ==================== URL CONVERTER ====================
+// ==================== URL CONVERTER (FIXED) ====================
 function convertToWssUrl(input) {
     if (!input) return '';
     input = input.trim();
@@ -185,7 +252,7 @@ class VoxiomBot {
         
         bots.set(this.id, this);
         totalDeployed++;
-        console.log(`[Bot #${this.id}] Created - Mode: ${mode}, Tag: ${serverTag || 'unknown'}, GameMode: ${gameMode || 'unknown'}`);
+        console.log(`[Bot #${this.id}] Created - Mode: ${mode}`);
         this.connect();
     }
 
@@ -312,7 +379,7 @@ class VoxiomBot {
     connect() {
         if (this.sessionId && currentSession.sessionId !== this.sessionId) return;
         
-        console.log(`[Bot #${this.id}] Connecting to ${this.url}...`);
+        console.log(`[Bot #${this.id}] Connecting...`);
         
         const options = {
             headers: {
@@ -363,15 +430,13 @@ class VoxiomBot {
             this.timerStarted = true;
             
             this.ws.send(this.buildPacket({ slot: this.cfg.slot }));
-            const displayTag = this.serverTag || 'unknown';
-            const displayMode = this.gameMode || 'unknown';
-            console.log(`[Bot #${this.id}] 🎮 Joined server: ${displayTag} (${displayMode})`);
+            console.log(`[Bot #${this.id}] 🎮 Joined`);
             
             let timeLeft = this.customTimer;
             this._killTimer = setInterval(() => {
                 if (--timeLeft <= 0) {
                     clearInterval(this._killTimer);
-                    console.log(`[Bot #${this.id}] ⏰ Timer expired - ${this.packetsSent} packets sent`);
+                    console.log(`[Bot #${this.id}] ⏰ Timer expired`);
                     this.handleDisconnect();
                 }
             }, 1000);
@@ -441,12 +506,11 @@ class VoxiomBot {
 
 // ==================== API ENDPOINTS ====================
 
-// Single server deploy (original)
 app.post('/api/deploy', (req, res) => {
     let { url, count, mode, timer, cycle, rejoinDelay } = req.body;
     
     console.log('='.repeat(50));
-    console.log(`📦 SINGLE SERVER DEPLOY: ${url}`);
+    console.log(`📦 DEPLOY: ${url}`);
     
     url = convertToWssUrl(url);
     
@@ -473,7 +537,6 @@ app.post('/api/deploy', (req, res) => {
     };
     
     console.log(`   Deploying: ${botCount} ${mode.toUpperCase()} bots`);
-    console.log(`   ⚡ INSTANT REDEPLOY: ON`);
     console.log('='.repeat(50));
     
     for (let i = 0; i < botCount; i++) {
@@ -489,22 +552,16 @@ app.post('/api/deploy', (req, res) => {
     
     res.json({
         success: true,
-        message: `Deployed ${botCount} bot(s) in ${MODES[mode].label} mode`,
-        deployed: botCount,
-        infiniteRedeploy: true
+        message: `Deployed ${botCount} bot(s)`,
+        deployed: botCount
     });
 });
 
-// ==================== NEW: MULTI-SERVER DEPLOY VIA /find ====================
 app.post('/api/deploy-to-find', async (req, res) => {
     let { region, gameMode, count, mode, timer, cycle, rejoinDelay } = req.body;
     
     console.log('='.repeat(50));
-    console.log(`🎮 MULTI-SERVER DEPLOY (via /find)`);
-    console.log(`   🌍 Region: ${REGION_NAMES[region]} (${region})`);
-    console.log(`   🎮 Game Mode: ${gameMode}`);
-    console.log(`   🤖 Bot Action: ${mode.toUpperCase()}`);
-    console.log(`   📊 Count: ${count}, Timer: ${timer}s`);
+    console.log(`🎮 DEPLOY: ${REGION_NAMES[region]} - ${gameMode}`);
     
     const validRegions = [0, 1, 2, 3];
     const validModes = ['ctg', 'br', 'ffa', 'svv'];
@@ -519,17 +576,18 @@ app.post('/api/deploy-to-find', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Invalid bot mode' });
     }
     
-    const botCount = Math.min(50, Math.max(1, parseInt(count) || 1));
+    const botCount = Math.min(20, Math.max(1, parseInt(count) || 1));
     const botTimer = Math.max(1, parseInt(timer) || 60);
     const botCycle = true;
     const botRejoinDelay = Math.max(0, Math.min(2000, parseInt(rejoinDelay) || 1));
     
     try {
+        await new Promise(r => setTimeout(r, 1000));
+        
         const findData = await callFindEndpoint(region, gameMode);
         
         if (!findData.success || !findData.tag) {
-            console.log(`❌ /find failed - no server tag`);
-            return res.status(500).json({ success: false, error: 'Failed to get server from /find' });
+            return res.status(500).json({ success: false, error: 'Failed to get server' });
         }
         
         const serverTag = findData.tag;
@@ -537,11 +595,12 @@ app.post('/api/deploy-to-find', async (req, res) => {
         const gameUrl = getGameUrl(serverTag, gameMode);
         const sessionId = Date.now() + '_' + Math.random().toString(36);
         
-        console.log(`   ✅ Got server tag: ${serverTag}`);
-        console.log(`   🔗 Game URL: ${gameUrl}`);
-        console.log(`   🔌 WebSocket: ${wssUrl}`);
+        console.log(`   ✅ Server: ${serverTag}`);
+        console.log(`   🔗 ${gameUrl}`);
         
-        // Update current session
+        findRateLimit.callCount = 0;
+        findRateLimit.isBlocked = false;
+        
         currentSession = {
             url: wssUrl,
             mode,
@@ -551,55 +610,48 @@ app.post('/api/deploy-to-find', async (req, res) => {
             botConfig: { count: botCount, timer: botTimer, rejoinDelay: botRejoinDelay }
         };
         
-        let deployed = 0;
         for (let i = 0; i < botCount; i++) {
             setTimeout(() => {
                 if (currentSession.sessionId === sessionId && currentSession.isDeploying) {
                     botIdCounter++;
-                    const newBot = new VoxiomBot(
+                    new VoxiomBot(
                         botIdCounter, wssUrl, mode, botTimer, botCycle, sessionId, botRejoinDelay,
                         serverTag, gameMode, region
                     );
-                    bots.set(newBot.id, newBot);
-                    deployed++;
                 }
             }, i * 100);
         }
         
-        console.log(`✅ Deployed ${botCount} ${mode.toUpperCase()} bots to:`);
-        console.log(`   🔗 ${gameUrl}`);
-        console.log(`   🌍 ${REGION_NAMES[region]} - ${GAME_MODE_CONFIG[gameMode]?.name}`);
+        console.log(`✅ Deployed ${botCount} bots`);
         console.log('='.repeat(50));
         
         res.json({
             success: true,
             deployed: botCount,
             serverTag: serverTag,
-            region: region,
-            gameMode: gameMode,
             gameUrl: gameUrl,
-            message: `Deployed ${botCount} ${mode.toUpperCase()} bots to ${REGION_NAMES[region]} - ${GAME_MODE_CONFIG[gameMode]?.name}`
+            message: `Deployed ${botCount} bots`
         });
         
     } catch (error) {
         console.error(`❌ Error:`, error.message);
-        res.status(500).json({ success: false, error: error.message });
+        findRateLimit.isBlocked = true;
+        findRateLimit.blockUntil = Date.now() + 15000;
+        res.status(429).json({ success: false, error: error.message });
     }
 });
 
 app.post('/api/clear-url', (req, res) => {
-    console.log(`🧹 CLEAR URL - Terminating infinite redeploy`);
+    console.log(`🧹 CLEAR URL`);
     currentSession.active = false;
     currentSession.isDeploying = false;
     currentSession.sessionId = null;
-    currentSession.url = null;
     
     const killed = bots.size;
     bots.forEach(bot => bot.disconnect());
     bots.clear();
     
-    console.log(`   Killed ${killed} bots`);
-    res.json({ success: true, killed, message: '✅ All bots stopped.' });
+    res.json({ success: true, killed });
 });
 
 app.post('/api/kill-all', (req, res) => {
@@ -625,7 +677,7 @@ app.post('/api/kill/:id', (req, res) => {
         }
     }
     if (!found) {
-        return res.status(404).json({ success: false, error: 'Bot not found' });
+        return res.status(404).json({ success: false });
     }
     found.disconnect();
     res.json({ success: true });
@@ -634,14 +686,12 @@ app.post('/api/kill/:id', (req, res) => {
 app.get('/api/status', (req, res) => {
     const botArray = Array.from(bots.values());
     const activeBots = botArray.filter(b => b.alive);
-    const totalPackets = botArray.reduce((sum, bot) => sum + (bot.packetsSent || 0), 0);
     
     res.json({
         success: true,
         active: activeBots.length,
         total: botArray.length,
         totalDeployed: botIdCounter,
-        totalPackets: totalPackets,
         currentUrl: currentSession.url,
         currentMode: currentSession.mode,
         sessionActive: currentSession.active,
@@ -650,11 +700,7 @@ app.get('/api/status', (req, res) => {
             id: bot.id,
             mode: bot.mode,
             alive: bot.alive,
-            cycle: bot.cycle,
-            timer: bot.customTimer,
-            serverTag: bot.serverTag,
-            gameMode: bot.gameMode,
-            packetsSent: bot.packetsSent
+            serverTag: bot.serverTag
         }))
     });
 });
@@ -667,8 +713,7 @@ app.get('/api/health', (req, res) => {
         activeBots: activeBots,
         totalBots: bots.size,
         memoryMB: (mem.heapUsed / 1024 / 1024).toFixed(1),
-        uptime: process.uptime(),
-        infiniteRedeployActive: currentSession.isDeploying
+        uptime: process.uptime()
     });
 });
 
@@ -685,33 +730,19 @@ const PORT = parseInt(process.env.PORT) || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n✅ Server running on port ${PORT}`);
     console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`🎮 MODES: LAG (10ms), PILLAR (25ms), DIG (50ms)`);
-    console.log(`🌍 MULTI-SERVER: Supports /find endpoint for region/gamemode selection`);
-    console.log(`♾️ INFINITE INSTANT REDEPLOY: ON\n`);
+    console.log(`🎮 MODES: LAG, PILLAR, DIG`);
+    console.log(`🛡️ Rate limit protection: ACTIVE\n`);
 });
 
-// Stats logger
 setInterval(() => {
     const active = Array.from(bots.values()).filter(b => b.alive).length;
-    const mem = process.memoryUsage();
     if (bots.size > 0) {
-        console.log(`📊 Active: ${active}/${bots.size} | Memory: ${(mem.heapUsed / 1024 / 1024).toFixed(1)}MB | Mode: ${currentSession.mode}`);
+        console.log(`📊 Active: ${active}/${bots.size}`);
     }
 }, 10000);
 
-// Graceful shutdown
-let shuttingDown = false;
-function shutdown() {
-    if (shuttingDown) return;
-    shuttingDown = true;
+process.on('SIGINT', () => {
     console.log('\n🛑 Shutting down...');
-    currentSession.isDeploying = false;
     for (const bot of bots.values()) bot.disconnect();
-    bots.clear();
-    setTimeout(() => process.exit(0), 1000);
-}
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('uncaughtException', (err) => console.error('❌', err.message));
-process.on('unhandledRejection', (reason) => console.error('❌', reason));
+    process.exit(0);
+});
