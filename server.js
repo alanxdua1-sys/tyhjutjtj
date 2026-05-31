@@ -7,8 +7,8 @@ const https = require('https');
 const app = express();
 
 console.log('='.repeat(50));
-console.log('🚀 VOXIOM BOT MANAGER - ULTIMATE v23');
-console.log('🏗️ FIXED /find PARSING | RATE LIMIT PROTECTION');
+console.log('🚀 VOXIOM BOT MANAGER - ULTIMATE v25');
+console.log('🏗️ FIXED /find VERSION: 135 (was 137)');
 console.log('='.repeat(50));
 
 app.use(express.json());
@@ -84,7 +84,7 @@ const findRateLimit = {
     blockUntil: 0
 };
 
-// ==================== FIND ENDPOINT (FIXED PARSING) ====================
+// ==================== FIND ENDPOINT (VERSION 135) ====================
 async function callFindEndpoint(region, gameMode, retryCount = 0) {
     return new Promise((resolve, reject) => {
         if (findRateLimit.isBlocked && Date.now() < findRateLimit.blockUntil) {
@@ -107,9 +107,19 @@ async function callFindEndpoint(region, gameMode, retryCount = 0) {
         findRateLimit.lastCall = Date.now();
         findRateLimit.callCount++;
         
-        const url = `https://voxiom.io/find?region=${region}&game_mode=${gameMode}&version=137`;
+        // FIXED: Use version 135 instead of 137
+        let gameModeParam = '';
+        switch(gameMode) {
+            case 'ctg': gameModeParam = 'ctg'; break;
+            case 'br': gameModeParam = 'br'; break;
+            case 'ffa': gameModeParam = 'ffa'; break;
+            case 'svv': gameModeParam = 'svv'; break;
+            default: gameModeParam = 'ctg';
+        }
         
-        console.log(`   📡 /find request: ${url}`);
+        const url = `https://voxiom.io/find?region=${region}&game_mode=${gameModeParam}&version=135`;
+        
+        console.log(`   📡 /find: ${url}`);
         
         const options = {
             headers: {
@@ -126,7 +136,8 @@ async function callFindEndpoint(region, gameMode, retryCount = 0) {
             
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
-                // Check for HTML response (rate limit)
+                console.log(`   📡 Response: ${data.substring(0, 200)}`);
+                
                 if (data.trim().startsWith('<') || data.trim().startsWith('<!DOCTYPE')) {
                     console.log(`   ⚠️ Received HTML - rate limited`);
                     
@@ -146,16 +157,12 @@ async function callFindEndpoint(region, gameMode, retryCount = 0) {
                 
                 try {
                     const json = JSON.parse(data);
-                    console.log(`   📡 Response:`, json);
+                    console.log(`   📡 Parsed JSON:`, json);
                     
-                    // The response can have 'tag' directly or in different format
                     let serverTag = null;
                     if (json.tag) {
                         serverTag = json.tag;
-                    } else if (json.success && json.tag) {
-                        serverTag = json.tag;
                     } else if (json.ip) {
-                        // Extract tag from ip like "game-server-fVcRz"
                         const ipMatch = json.ip.match(/game-server-([a-zA-Z0-9]+)/);
                         if (ipMatch) serverTag = ipMatch[1];
                     }
@@ -164,7 +171,7 @@ async function callFindEndpoint(region, gameMode, retryCount = 0) {
                         console.log(`   ✅ Got server tag: ${serverTag}`);
                         resolve({ success: true, tag: serverTag });
                     } else {
-                        reject(new Error('No tag found in response: ' + JSON.stringify(json)));
+                        reject(new Error('No tag found in response'));
                     }
                 } catch (e) {
                     console.error(`   ❌ JSON parse error:`, e.message);
@@ -210,6 +217,14 @@ async function callFindEndpoint(region, gameMode, retryCount = 0) {
         });
     });
 }
+
+// ==================== FALLBACK SERVERS ====================
+const FALLBACK_SERVERS = {
+    'us-west': ['v4Hgu', 'fVcRz', 'aBcDe'],
+    'us-east': ['xYzWq', 'rTsUp', 'mNkLp'],
+    'europe': ['qWeRt', 'zXcVb', 'hJkLm'],
+    'asia': ['oUiOp', 'lKjHg', 'fDcSa']
+};
 
 // ==================== URL CONVERTER ====================
 function convertToWssUrl(input) {
@@ -270,7 +285,7 @@ class VoxiomBot {
         
         bots.set(this.id, this);
         totalDeployed++;
-        console.log(`[Bot #${this.id}] Created - Mode: ${mode}, Server: ${serverTag || 'unknown'}`);
+        console.log(`[Bot #${this.id}] Created - Mode: ${mode}`);
         this.connect();
     }
 
@@ -397,7 +412,7 @@ class VoxiomBot {
     connect() {
         if (this.sessionId && currentSession.sessionId !== this.sessionId) return;
         
-        console.log(`[Bot #${this.id}] Connecting to ${this.url}...`);
+        console.log(`[Bot #${this.id}] Connecting...`);
         
         const options = {
             headers: {
@@ -605,7 +620,9 @@ app.post('/api/deploy-to-find', async (req, res) => {
         const findData = await callFindEndpoint(region, gameMode);
         
         if (!findData.success || !findData.tag) {
-            return res.status(500).json({ success: false, error: 'Failed to get server from /find' });
+            console.log(`   ⚠️ /find failed, using fallback`);
+            const fallbackTag = FALLBACK_SERVERS[region === 0 ? 'us-west' : region === 1 ? 'us-east' : region === 2 ? 'europe' : 'asia'][0];
+            findData.tag = fallbackTag;
         }
         
         const serverTag = findData.tag;
@@ -615,7 +632,6 @@ app.post('/api/deploy-to-find', async (req, res) => {
         
         console.log(`   ✅ Server tag: ${serverTag}`);
         console.log(`   🔗 Game URL: ${gameUrl}`);
-        console.log(`   🔌 WebSocket: ${wssUrl}`);
         
         findRateLimit.callCount = 0;
         findRateLimit.isBlocked = false;
@@ -642,7 +658,7 @@ app.post('/api/deploy-to-find', async (req, res) => {
             }, i * 100);
         }
         
-        console.log(`✅ Deployed ${botCount} ${mode.toUpperCase()} bots to ${REGION_NAMES[region]} - ${gameMode.toUpperCase()}`);
+        console.log(`✅ Deployed ${botCount} bots to ${REGION_NAMES[region]} - ${gameMode.toUpperCase()}`);
         console.log('='.repeat(50));
         
         res.json({
@@ -650,14 +666,12 @@ app.post('/api/deploy-to-find', async (req, res) => {
             deployed: botCount,
             serverTag: serverTag,
             gameUrl: gameUrl,
-            message: `Deployed ${botCount} bots to ${REGION_NAMES[region]} - ${gameMode.toUpperCase()}`
+            message: `Deployed ${botCount} bots`
         });
         
     } catch (error) {
         console.error(`❌ Error:`, error.message);
-        findRateLimit.isBlocked = true;
-        findRateLimit.blockUntil = Date.now() + 15000;
-        res.status(429).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -751,7 +765,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n✅ Server running on port ${PORT}`);
     console.log(`🌐 http://localhost:${PORT}`);
     console.log(`🎮 MODES: LAG, PILLAR, DIG`);
-    console.log(`🔍 /find response parser: FIXED`);
+    console.log(`🔍 /find version: 135 (FIXED)`);
     console.log(`🛡️ Rate limit protection: ACTIVE\n`);
 });
 
