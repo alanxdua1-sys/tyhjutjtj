@@ -15,38 +15,219 @@
             justify-content: center;
             font-family: 'Share Tech Mono', monospace;
             padding: 16px;
+            position: relative;
         }
+        
+        /* ==================== SERVER SELECTOR PANEL (TOP LEFT) ==================== */
+        .server-selector {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            background: rgba(6, 11, 20, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #0f2040;
+            border-radius: 12px;
+            z-index: 1000;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .server-selector-header {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(180,0,255,0.05));
+            border-bottom: 1px solid #0f2040;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+        .server-selector-header h3 {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: #00d4ff;
+            margin: 0;
+        }
+        .server-selector-header span {
+            color: #3a5275;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+        .server-selector-content {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        .server-selector-content.show {
+            display: block;
+        }
+        .region-group {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #0f2040;
+            padding-bottom: 12px;
+        }
+        .region-title {
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: #ffaa00;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .region-title input {
+            width: 16px;
+            height: 16px;
+            accent-color: #00d4ff;
+            cursor: pointer;
+        }
+        .mode-check-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-left: 12px;
+            margin-bottom: 8px;
+        }
+        .mode-check {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: #3a5275;
+            cursor: pointer;
+        }
+        .mode-check input {
+            width: 14px;
+            height: 14px;
+            accent-color: #00d4ff;
+            cursor: pointer;
+        }
+        .mode-check input:checked + span {
+            color: #00ff88;
+        }
+        .mode-check span {
+            transition: color 0.2s;
+        }
+        .bots-per-gamemode {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: rgba(0,212,255,0.03);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #0f2040;
+        }
+        .bots-per-gamemode .label {
+            margin-bottom: 0;
+            font-size: 8px;
+        }
+        .bots-per-gamemode input {
+            width: 80px;
+            background: rgba(0,212,255,0.03);
+            border: 1px solid #0f2040;
+            border-radius: 6px;
+            padding: 8px;
+            color: #00d4ff;
+            font-family: monospace;
+            text-align: center;
+        }
+        .server-selector-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #0f2040;
+        }
+        .selector-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: 1px solid #0f2040;
+            border-radius: 6px;
+            color: #3a5275;
+            font-size: 8px;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .selector-btn:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+        .selector-btn.primary {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+        .selector-btn.primary:hover {
+            background: rgba(0,255,136,0.1);
+            box-shadow: 0 0 8px rgba(0,255,136,0.2);
+        }
+        .selected-preview {
+            font-size: 8px;
+            color: #00ff88;
+            margin-top: 10px;
+            padding: 6px;
+            background: rgba(0,255,136,0.05);
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        /* Main container - shifted right when panel is open */
         .container {
             width: 100%;
             max-width: 520px;
             background: #060b14;
             border: 1px solid #0f2040;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 0 60px rgba(0,0,0,0.9);
             overflow: hidden;
+            transition: margin 0.3s ease;
         }
+        
+        @media (min-width: 900px) {
+            .container {
+                margin-left: 360px;
+            }
+        }
+        @media (max-width: 899px) {
+            .server-selector { position: relative; top: 0; left: 0; width: 100%; margin-bottom: 16px; }
+            .container { margin-left: 0; }
+            body { flex-direction: column; }
+        }
+        
         .header {
             padding: 20px 24px;
             border-bottom: 1px solid #0f2040;
             position: relative;
+            background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(180,0,255,0.02));
         }
         .header::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00d4ff, #b400ff, #ffaa00, transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         h1 {
             font-family: 'Orbitron', monospace;
             font-size: 18px;
             font-weight: 900;
             letter-spacing: 0.2em;
-            color: #00d4ff;
-            text-shadow: 0 0 15px rgba(0,212,255,0.5);
+            background: linear-gradient(135deg, #00d4ff, #b400ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             text-align: center;
         }
-        h1 span { color: #ff3c6e; }
+        h1 span { color: #ffaa00; background: none; -webkit-background-clip: unset; background-clip: unset; }
         .user-bar {
             display: flex;
             align-items: center;
@@ -60,15 +241,25 @@
             border: 1px solid #ff3c6e;
             color: #ff3c6e;
             padding: 6px 16px;
-            border-radius: 3px;
+            border-radius: 20px;
             font-size: 9px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .logout-btn:hover { background: rgba(255,60,110,0.1); }
+        .logout-btn:hover { background: rgba(255,60,110,0.1); transform: scale(1.02); }
         .content { padding: 24px; }
-        .field { margin-bottom: 16px; }
+        
+        /* Custom URL Section - hidden when using selector */
+        .custom-url-section {
+            transition: all 0.3s ease;
+        }
+        .custom-url-section.hidden {
+            display: none;
+        }
+        
+        .field { margin-bottom: 18px; }
         .label {
             display: block;
             font-size: 9px;
@@ -82,14 +273,15 @@
             width: 100%;
             background: rgba(0,212,255,0.03);
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 12px 40px 12px 16px;
             color: #00d4ff;
             font-family: 'Share Tech Mono', monospace;
             font-size: 12px;
             outline: none;
+            transition: all 0.2s;
         }
-        .input:focus { border-color: #00d4ff; }
+        .input:focus { border-color: #00d4ff; box-shadow: 0 0 10px rgba(0,212,255,0.2); }
         .input::placeholder { color: #3a5275; font-size: 10px; }
         .clear-url-btn {
             position: absolute;
@@ -101,40 +293,49 @@
             color: #ff3c6e;
             width: 28px;
             height: 28px;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .clear-url-btn:hover { background: rgba(255,60,110,0.2); }
         .url-preview {
             font-size: 9px;
             color: #00ff88;
             margin-top: 6px;
             padding: 6px 10px;
             background: rgba(0,255,136,0.05);
-            border-radius: 4px;
+            border-radius: 6px;
             display: none;
+            border-left: 2px solid #00ff88;
         }
-        .url-preview.show { display: block; }
-        .row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .url-preview.show { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .row { display: flex; gap: 12px; margin-bottom: 18px; }
         .row .field { flex: 1; margin-bottom: 0; }
-        .mode-selector { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        
+        .mode-selector { display: flex; gap: 12px; margin-bottom: 18px; }
         .mode-btn {
             flex: 1;
-            min-width: 140px;
-            padding: 14px;
+            padding: 12px;
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 8px;
             background: transparent;
             color: #3a5275;
             font-size: 11px;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-weight: bold;
         }
-        .mode-btn.active { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.05); }
-        .mode-btn.pillar.active { border-color: #b400ff; color: #b400ff; background: rgba(180,0,255,0.05); }
+        .mode-btn:hover { transform: translateY(-2px); border-color: #3a5275; }
+        .mode-btn.active { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.08); box-shadow: 0 0 8px rgba(0,212,255,0.2); }
+        .mode-btn[data-mode="pillar"].active { border-color: #b400ff; color: #b400ff; background: rgba(180,0,255,0.08); }
         
-        .delay-slider { margin-bottom: 16px; }
+        .delay-slider { margin-bottom: 18px; }
         .delay-controls { display: flex; gap: 12px; align-items: center; }
         .delay-range {
             flex: 1;
@@ -156,7 +357,7 @@
         .delay-value {
             background: rgba(0,212,255,0.15);
             border: 1px solid #00d4ff;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 8px 12px;
             font-size: 11px;
             font-family: 'Orbitron', monospace;
@@ -176,42 +377,50 @@
             color: #3a5275;
         }
         .cycle-label input { width: 18px; height: 18px; accent-color: #00ff88; cursor: pointer; }
-        .cycle-label input:checked + span { color: #00ff88; }
+        .cycle-label input:checked + span { color: #00ff88; text-shadow: 0 0 5px rgba(0,255,136,0.3); }
+        
         .actions { display: flex; gap: 12px; margin-bottom: 20px; }
         .btn {
             flex: 1;
             padding: 14px;
             border: 1px solid;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 12px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             cursor: pointer;
             background: transparent;
             font-weight: 600;
+            transition: all 0.2s;
         }
         .btn-deploy { border-color: #00ff88; color: #00ff88; }
-        .btn-deploy:hover { background: rgba(0,255,136,0.08); }
-        .btn-deploy:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-deploy:hover { background: rgba(0,255,136,0.1); box-shadow: 0 0 15px rgba(0,255,136,0.2); transform: translateY(-2px); }
+        .btn-deploy:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
         .btn-kill { border-color: #ff3c6e; color: #ff3c6e; }
-        .btn-kill:hover { background: rgba(255,60,110,0.08); }
-        .btn-kill:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-kill:hover { background: rgba(255,60,110,0.1); box-shadow: 0 0 15px rgba(255,60,110,0.2); transform: translateY(-2px); }
+        .btn-kill:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+        
         .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
         .stat-card {
             background: rgba(0,212,255,0.03);
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 12px;
             padding: 16px;
             text-align: center;
+            transition: all 0.2s;
         }
+        .stat-card:hover { border-color: #00d4ff; transform: translateY(-2px); }
         .stat-value {
             font-family: 'Orbitron', monospace;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             display: block;
-            color: #00d4ff;
+            background: linear-gradient(135deg, #00d4ff, #b400ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        .stat-value.green { color: #00ff88; }
+        .stat-value.green { background: linear-gradient(135deg, #00ff88, #00d4ff); -webkit-background-clip: text; background-clip: text; }
         .stat-label {
             font-size: 8px;
             letter-spacing: 0.2em;
@@ -220,32 +429,35 @@
             margin-top: 4px;
         }
         .current-session {
-            background: rgba(0,212,255,0.03);
+            background: rgba(0,212,255,0.05);
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 10px 14px;
             margin-bottom: 12px;
             font-size: 9px;
             color: #3a5275;
             display: none;
         }
-        .current-session span { color: #00d4ff; }
+        .current-session span { color: #00d4ff; font-weight: bold; }
         .refresh-btn {
             background: transparent;
             border: 1px solid #3a5275;
             color: #3a5275;
             padding: 8px 12px;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 9px;
             cursor: pointer;
             width: 100%;
             margin-bottom: 12px;
+            transition: all 0.2s;
         }
-        .refresh-btn:hover { border-color: #00d4ff; color: #00d4ff; }
+        .refresh-btn:hover { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.05); }
+        
         .bot-list {
             max-height: 120px;
             overflow-y: auto;
             margin-bottom: 16px;
+            border-radius: 8px;
         }
         .bot-item {
             display: flex;
@@ -254,13 +466,16 @@
             padding: 8px 12px;
             background: rgba(0,212,255,0.02);
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 6px;
             font-size: 10px;
+            transition: all 0.2s;
         }
-        .bot-item .bot-id { color: #00d4ff; font-family: 'Orbitron', monospace; }
-        .bot-item .bot-mode { color: #3a5275; font-size: 8px; text-transform: uppercase; }
-        .bot-item .bot-slot { color: #00ff88; font-size: 7px; background: rgba(0,255,136,0.15); padding: 2px 5px; border-radius: 3px; }
+        .bot-item:hover { transform: translateX(4px); border-color: #00d4ff; }
+        .bot-item .bot-id { color: #00d4ff; font-family: 'Orbitron', monospace; font-weight: bold; }
+        .bot-item .bot-mode { font-size: 8px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+        .bot-item .bot-mode.lag { color: #00d4ff; background: rgba(0,212,255,0.1); }
+        .bot-item .bot-mode.pillar { color: #b400ff; background: rgba(180,0,255,0.1); }
         .bot-item .bot-status { width: 8px; height: 8px; border-radius: 50%; background: #00ff88; animation: blink 1s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .bot-item .bot-cycle { color: #ffaa00; font-size: 8px; }
@@ -269,25 +484,30 @@
             border: 1px solid #ff3c6e;
             color: #ff3c6e;
             padding: 4px 8px;
-            border-radius: 2px;
+            border-radius: 6px;
             font-size: 8px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .kill-bot-btn:hover { background: rgba(255,60,110,0.2); transform: scale(1.05); }
+        
         .log-container {
             background: rgba(0,0,0,0.3);
             border: 1px solid #0f2040;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 12px;
             height: 140px;
             overflow-y: auto;
             font-size: 9px;
             line-height: 1.8;
         }
-        .log-entry { color: #3a5275; }
+        .log-entry { color: #3a5275; animation: slideIn 0.2s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         .log-entry.success { color: #00ff88; }
         .log-entry.error { color: #ff3c6e; }
         .log-entry.warning { color: #ffaa00; }
         .log-entry.info { color: #00d4ff; }
+        
         .footer {
             padding: 16px 24px;
             border-top: 1px solid #0f2040;
@@ -295,18 +515,56 @@
             font-size: 8px;
             letter-spacing: 0.2em;
             color: #3a5275;
+            background: linear-gradient(135deg, rgba(0,212,255,0.02), rgba(180,0,255,0.01));
         }
-        .slot-badge {
-            background: rgba(0,255,136,0.1);
-            color: #00ff88;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 7px;
-            margin-left: 5px;
+        .mode-description {
+            font-size: 8px;
+            color: #3a5275;
+            text-align: center;
+            margin-top: 8px;
+            padding: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
         }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0f2040; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #00d4ff; border-radius: 3px; }
     </style>
 </head>
 <body>
+    <!-- SELECTOR PANEL - TOP LEFT CORNER -->
+    <div class="server-selector" id="serverSelector">
+        <div class="server-selector-header" id="selectorHeader">
+            <h3>🎮 SERVER / GAMEMODE SELECTOR</h3>
+            <span id="selectorToggle">▼</span>
+        </div>
+        <div class="server-selector-content" id="selectorContent">
+            <div class="region-group">
+                <div class="region-title">
+                    <input type="checkbox" id="selectAllRegions">
+                    <span>🌍 ALL REGIONS</span>
+                </div>
+                <div id="regionsContainer"></div>
+            </div>
+            <div class="region-group">
+                <div class="region-title">
+                    <input type="checkbox" id="selectAllModes">
+                    <span>🎯 ALL GAMEMODES</span>
+                </div>
+                <div class="mode-check-group" id="modesContainer"></div>
+            </div>
+            <div class="bots-per-gamemode">
+                <label class="label">🤖 BOTS PER GAMEMODE</label>
+                <input type="number" id="botsPerGamemode" min="1" max="50" value="1">
+            </div>
+            <div class="server-selector-actions">
+                <button class="selector-btn" id="clearSelectionBtn">CLEAR</button>
+                <button class="selector-btn primary" id="applySelectionBtn">APPLY & DEPLOY</button>
+            </div>
+            <div class="selected-preview" id="selectedPreview">No servers selected</div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>VOXIOM <span>BOT</span> MGR</h1>
@@ -315,14 +573,18 @@
             <button class="logout-btn" id="logoutBtn">LOGOUT</button>
         </div>
         <div class="content">
-            <div class="field">
-                <label class="label">Game Link or Server ID</label>
-                <div class="input-wrapper">
-                    <input type="text" class="input" id="serverUrl" placeholder="voxiom.io/experimental#XXXXX or p-u1r">
-                    <button class="clear-url-btn" id="clearUrlBtn">✕</button>
+            <!-- Custom URL Section - hides when selector is used -->
+            <div class="custom-url-section" id="customUrlSection">
+                <div class="field">
+                    <label class="label">Game Link or Server ID</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="input" id="serverUrl" placeholder="voxiom.io/experimental#XXXXX or p-u1r">
+                        <button class="clear-url-btn" id="clearUrlBtn">✕</button>
+                    </div>
+                    <div class="url-preview" id="urlPreview"></div>
                 </div>
-                <div class="url-preview" id="urlPreview"></div>
             </div>
+            
             <div class="row">
                 <div class="field">
                     <label class="label">Bot Count</label>
@@ -333,9 +595,13 @@
                     <input type="number" class="input" id="botTimer" min="1" value="60">
                 </div>
             </div>
+            
             <div class="mode-selector">
-                <button class="mode-btn active" id="modeLag" data-mode="lag">BSG CTG LAG</button>
-                <button class="mode-btn pillar" id="modePillar" data-mode="pillar">PILLAR BOT</button>
+                <button class="mode-btn active" data-mode="lag">⚡ LAG</button>
+                <button class="mode-btn" data-mode="pillar">🏗️ PILLAR</button>
+            </div>
+            <div class="mode-description" id="modeDesc">
+                ⚡ LAG: Drifting movement, hold click, jump every 1s
             </div>
             
             <div class="delay-slider">
@@ -345,21 +611,22 @@
                     <div class="delay-value" id="delayValue">30ms</div>
                 </div>
             </div>
-            
             <div class="cycle-row">
                 <label class="cycle-label">
                     <input type="checkbox" id="cycleCheckbox">
                     <span>♾️ FOREVER CYCLE MODE (Bots Rejoin Indefinitely)</span>
                 </label>
             </div>
+            
             <div class="actions">
-                <button class="btn btn-deploy" id="deployBtn">DEPLOY</button>
-                <button class="btn btn-kill" id="killAllBtn" disabled>KILL ALL</button>
+                <button class="btn btn-deploy" id="deployBtn">🚀 DEPLOY</button>
+                <button class="btn btn-kill" id="killAllBtn" disabled>💀 KILL ALL</button>
             </div>
+            
             <div class="stats">
                 <div class="stat-card">
                     <span class="stat-value green" id="activeBots">0</span>
-                    <span class="stat-label">ACTIVE</span>
+                    <span class="stat-label">ACTIVE BOTS</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-value" id="totalBots">0</span>
@@ -367,25 +634,60 @@
                 </div>
             </div>
             <div class="current-session" id="currentSession">
-                <span>📡 SESSION:</span> <span id="sessionUrl"></span> (<span id="sessionMode"></span>)
-                <span id="slotInfo" class="slot-badge" style="display:none;"></span>
+                <span>📡 ACTIVE SESSION:</span> <span id="sessionUrl"></span> (<span id="sessionMode"></span>)
             </div>
-            <button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button>
+            <button class="refresh-btn" id="refreshBtn">⟳ REFRESH STATUS</button>
             <div class="bot-list" id="botList">
-                <div class="bot-item" style="justify-content: center;">NO ACTIVE BOTS</div>
+                <div class="bot-item" style="justify-content: center;">🤖 NO ACTIVE BOTS</div>
             </div>
             <div class="log-container" id="logContainer">
-                <div class="log-entry info">[SYSTEM] Bot Manager Loaded</div>
-                <div class="log-entry success">[SYSTEM] NO LIMITS - Unlimited bots, forever cycle mode</div>
-                <div class="log-entry info">[SYSTEM] Slot blocking active for PILLAR mode</div>
+                <div class="log-entry info">[SYSTEM] Bot Manager v10 Loaded</div>
+                <div class="log-entry success">[SYSTEM] URL Formats: FFA → experimental/#XXXXX | Others → /#XXXXX</div>
+                <div class="log-entry info">[SYSTEM] Select regions/modes, bots auto-join via /find</div>
             </div>
         </div>
-        <div class="footer">LAG · PILLAR | 🔒 SLOT BLOCKING | ♾️ FOREVER CYCLE</div>
+        <div class="footer">⚡ LAG · 🏗️ PILLAR · 🏃 ROAM</div>
     </div>
+
     <script>
+        // ==================== REGIONS & GAME MODES ====================
+        const REGIONS = [
+            { id: 0, name: "🇺🇸 US-West", label: "US-West" },
+            { id: 1, name: "🇺🇸 US-East", label: "US-East" },
+            { id: 2, name: "🇪🇺 Europe", label: "Europe" },
+            { id: 3, name: "🇯🇵 Asia", label: "Asia" }
+        ];
+        
+        const GAME_MODES = [
+            { id: "ctg", name: "Capture The Gems", label: "CTG", urlType: "normal" },
+            { id: "br", name: "Battle Royale", label: "BR", urlType: "normal" },
+            { id: "svv", name: "Survival", label: "SURV", urlType: "normal" },
+            { id: "ffa", name: "Free For All", label: "FFA", urlType: "experimental" }
+        ];
+        
+        // ==================== STATE ====================
         let currentMode = 'lag';
         let isDeploying = false;
         let statusInterval = null;
+        let usingSelector = false;  // Track if we're using selector instead of custom URL
+        
+        let selectedRegions = new Set([0, 1, 2, 3]);
+        let selectedModes = new Set(["ctg", "br", "ffa", "svv"]);
+        
+        // ==================== DOM ELEMENTS ====================
+        const serverSelector = document.getElementById('serverSelector');
+        const selectorHeader = document.getElementById('selectorHeader');
+        const selectorContent = document.getElementById('selectorContent');
+        const selectorToggle = document.getElementById('selectorToggle');
+        const regionsContainer = document.getElementById('regionsContainer');
+        const modesContainer = document.getElementById('modesContainer');
+        const selectAllRegions = document.getElementById('selectAllRegions');
+        const selectAllModes = document.getElementById('selectAllModes');
+        const botsPerGamemodeInput = document.getElementById('botsPerGamemode');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const applySelectionBtn = document.getElementById('applySelectionBtn');
+        const selectedPreview = document.getElementById('selectedPreview');
+        const customUrlSection = document.getElementById('customUrlSection');
         
         const serverUrlInput = document.getElementById('serverUrl');
         const urlPreview = document.getElementById('urlPreview');
@@ -407,11 +709,12 @@
         const currentSessionDiv = document.getElementById('currentSession');
         const sessionUrlSpan = document.getElementById('sessionUrl');
         const sessionModeSpan = document.getElementById('sessionMode');
-        const slotInfo = document.getElementById('slotInfo');
+        const modeDesc = document.getElementById('modeDesc');
         
-        rejoinDelay.addEventListener('input', () => {
-            delayValue.textContent = rejoinDelay.value + 'ms';
-        });
+        const modeDescriptions = {
+            lag: '⚡ LAG: Drifting movement, hold click, jump every 1s — Creates lag/glitch effect',
+            pillar: '🏗️ PILLAR: Looks down, jumps and places blocks to build pillars. SLOT RESERVATION - blocks real players!'
+        };
         
         function addLog(message, type = 'info') {
             const entry = document.createElement('div');
@@ -419,26 +722,324 @@
             entry.textContent = `[${new Date().toTimeString().slice(0,8)}] ${message}`;
             logContainer.appendChild(entry);
             logContainer.scrollTop = logContainer.scrollHeight;
-            while (logContainer.children.length > 30) logContainer.removeChild(logContainer.firstChild);
+            while (logContainer.children.length > 50) logContainer.removeChild(logContainer.firstChild);
         }
         
-        function previewConvertUrl(input) {
+        function updateSelectedPreview() {
+            if (selectedRegions.size === 0 || selectedModes.size === 0) {
+                selectedPreview.textContent = '⚠️ Select at least one region AND one gamemode!';
+                selectedPreview.style.color = '#ffaa00';
+            } else {
+                selectedPreview.textContent = `📡 ${selectedRegions.size} region(s) × ${selectedModes.size} mode(s) | ${botsPerGamemodeInput.value} bot(s) per mode`;
+                selectedPreview.style.color = '#00ff88';
+            }
+        }
+        
+        function renderRegions() {
+            regionsContainer.innerHTML = '';
+            REGIONS.forEach(region => {
+                const div = document.createElement('div');
+                div.className = 'mode-check';
+                div.innerHTML = `
+                    <input type="checkbox" value="${region.id}" id="region_${region.id}" ${selectedRegions.has(region.id) ? 'checked' : ''}>
+                    <span>${region.name}</span>
+                `;
+                const cb = div.querySelector('input');
+                cb.addEventListener('change', (e) => {
+                    if (e.target.checked) selectedRegions.add(region.id);
+                    else selectedRegions.delete(region.id);
+                    updateSelectedPreview();
+                    selectAllRegions.checked = selectedRegions.size === REGIONS.length;
+                });
+                regionsContainer.appendChild(div);
+            });
+        }
+        
+        function renderModes() {
+            modesContainer.innerHTML = '';
+            GAME_MODES.forEach(mode => {
+                const div = document.createElement('div');
+                div.className = 'mode-check';
+                div.innerHTML = `
+                    <input type="checkbox" value="${mode.id}" id="mode_${mode.id}" ${selectedModes.has(mode.id) ? 'checked' : ''}>
+                    <span>${mode.label}${mode.urlType === 'experimental' ? ' (exp)' : ''}</span>
+                `;
+                const cb = div.querySelector('input');
+                cb.addEventListener('change', (e) => {
+                    if (e.target.checked) selectedModes.add(mode.id);
+                    else selectedModes.delete(mode.id);
+                    updateSelectedPreview();
+                    selectAllModes.checked = selectedModes.size === GAME_MODES.length;
+                });
+                modesContainer.appendChild(div);
+            });
+        }
+        
+        // ==================== DEPLOY TO SELECTED SERVERS ====================
+        async function deployToSelectedServers() {
+            if (isDeploying) return;
+            
+            const botsPerGamemode = parseInt(botsPerGamemodeInput.value);
+            const botTimer = parseInt(botTimerInput.value);
+            const cycle = cycleCheckbox.checked;
+            const delay = parseInt(rejoinDelay.value);
+            const botActionMode = currentMode;
+            
+            if (selectedRegions.size === 0 || selectedModes.size === 0) {
+                addLog('Please select at least one region and one gamemode', 'error');
+                return;
+            }
+            
+            if (botsPerGamemode < 1 || botsPerGamemode > 50) {
+                addLog('Bots per gamemode must be 1-50', 'error');
+                return;
+            }
+            
+            isDeploying = true;
+            deployBtn.disabled = true;
+            deployBtn.textContent = 'DEPLOYING...';
+            
+            const totalCombos = selectedRegions.size * selectedModes.size;
+            addLog(`📡 Deploying to ${totalCombos} combinations (${botsPerGamemode} bots per mode)`, 'info');
+            
+            let deployedTotal = 0;
+            let errors = 0;
+            
+            for (const regionId of selectedRegions) {
+                for (const modeId of selectedModes) {
+                    try {
+                        const region = REGIONS.find(r => r.id === regionId);
+                        const mode = GAME_MODES.find(m => m.id === modeId);
+                        addLog(`🎮 Deploying ${botsPerGamemode} ${botActionMode.toUpperCase()} bots to ${region?.label} - ${mode?.label}...`, 'info');
+                        
+                        const res = await fetch('/api/deploy-to-find', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                region: regionId,
+                                gameMode: modeId,
+                                count: botsPerGamemode,
+                                mode: botActionMode,
+                                timer: botTimer,
+                                cycle: cycle,
+                                rejoinDelay: delay
+                            })
+                        });
+                        
+                        const data = await res.json();
+                        if (data.success) {
+                            deployedTotal += data.deployed || 0;
+                            addLog(`✅ Deployed ${data.deployed} bots to ${region?.label} - ${mode?.label}`, 'success');
+                            if (data.gameUrl) {
+                                addLog(`   🔗 ${data.gameUrl}`, 'info');
+                            }
+                        } else {
+                            errors++;
+                            addLog(`❌ Failed: ${data.error || 'Unknown error'}`, 'error');
+                        }
+                    } catch (e) {
+                        errors++;
+                        addLog(`❌ Error: ${e.message}`, 'error');
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+            
+            addLog(`📊 Complete: ${deployedTotal} bots deployed, ${errors} failures`, deployedTotal > 0 ? 'success' : 'error');
+            isDeploying = false;
+            deployBtn.disabled = false;
+            deployBtn.textContent = '🚀 DEPLOY BOTS';
+            fetchStatus();
+        }
+        
+        // ==================== EXTRACT SERVER TAG ====================
+        function extractTagFromInput(input) {
+            if (!input) return null;
             input = input.trim();
-            if (!input) return '';
-            if (input.startsWith('wss://')) return input;
-            let match = input.match(/voxiom\.io\/experimental#([a-zA-Z0-9-]+)/);
-            if (match) return `wss://game-server-${match[1]}.voxiom.io:443`;
-            if (/^[a-zA-Z0-9-]+$/.test(input)) return `wss://game-server-${input}.voxiom.io:443`;
-            match = input.match(/game-server-([a-zA-Z0-9-]+)\.voxiom\.io/);
-            if (match) return `wss://game-server-${match[1]}.voxiom.io:443`;
-            return input;
+            if (/^[a-zA-Z0-9]{5}$/.test(input)) return input;
+            let match = input.match(/voxiom\.io\/#([a-zA-Z0-9]{5})/);
+            if (match) return match[1];
+            match = input.match(/voxiom\.io\/experimental\/?#([a-zA-Z0-9]{5})/);
+            if (match) return match[1];
+            match = input.match(/([a-zA-Z0-9]{5})/);
+            return match ? match[1] : null;
+        }
+        
+        function isExperimentalUrl(input) {
+            return input.includes('/experimental');
+        }
+        
+        // ==================== DEPLOY TO SINGLE CUSTOM SERVER ====================
+        async function deploySingleServer() {
+            if (isDeploying) return;
+            
+            const input = serverUrlInput.value.trim();
+            const tag = extractTagFromInput(input);
+            const count = parseInt(botCountInput.value);
+            const timer = parseInt(botTimerInput.value);
+            const cycle = cycleCheckbox.checked;
+            const delay = parseInt(rejoinDelay.value);
+            
+            if (!tag || tag.length !== 5) {
+                addLog('Enter a valid server ID (5 characters) or URL', 'error');
+                return;
+            }
+            if (count < 1 || count > 50) { addLog('Bot count must be 1-50', 'error'); return; }
+            
+            isDeploying = true;
+            deployBtn.disabled = true;
+            deployBtn.textContent = 'DEPLOYING...';
+            addLog(`🎮 Deploying ${count} ${currentMode.toUpperCase()} bots to server: ${tag}`, 'info');
+            
+            try {
+                const res = await fetch('/api/deploy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: input,
+                        count, 
+                        mode: currentMode, 
+                        timer, 
+                        cycle, 
+                        rejoinDelay: delay 
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    addLog(data.message, 'success');
+                    fetchStatus();
+                } else {
+                    addLog(data.error || 'Deployment failed', 'error');
+                }
+            } catch (e) {
+                addLog('Deployment error: ' + e.message, 'error');
+            } finally {
+                isDeploying = false;
+                deployBtn.disabled = false;
+                deployBtn.textContent = '🚀 DEPLOY';
+            }
+        }
+        
+        // ==================== MAIN DEPLOY DISPATCH ====================
+        function deployBots() {
+            if (usingSelector) {
+                // Use selector mode - deploy to all selected servers
+                deployToSelectedServers();
+            } else {
+                // Use custom URL mode
+                deploySingleServer();
+            }
+        }
+        
+        // ==================== TOGGLE URL SECTION BASED ON SELECTOR USAGE ====================
+        function setUsingSelector(useSelector) {
+            usingSelector = useSelector;
+            if (usingSelector) {
+                customUrlSection.classList.add('hidden');
+                addLog('🎮 Using REGION/GAMEMODE SELECTOR - Custom URL input hidden', 'info');
+            } else {
+                customUrlSection.classList.remove('hidden');
+                addLog('📝 Using CUSTOM SERVER URL - Region selector hidden', 'info');
+            }
+        }
+        
+        function clearSelection() {
+            selectedRegions.clear();
+            selectedModes.clear();
+            document.querySelectorAll('#regionsContainer input').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#modesContainer input').forEach(cb => cb.checked = false);
+            selectAllRegions.checked = false;
+            selectAllModes.checked = false;
+            updateSelectedPreview();
+            addLog('Cleared all selections', 'info');
+            // If no selections, revert to custom URL mode
+            setUsingSelector(false);
+        }
+        
+        // ==================== FETCH STATUS ====================
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                if (data.success) {
+                    activeBotsSpan.textContent = data.active;
+                    totalBotsSpan.textContent = data.total;
+                    killAllBtn.disabled = data.active === 0;
+                    
+                    if (data.currentUrl && data.sessionActive) {
+                        currentSessionDiv.style.display = 'block';
+                        sessionUrlSpan.textContent = data.currentUrl.replace('wss://', '').replace(':443', '');
+                        let modeDisplay = data.currentMode === 'lag' ? 'LAG' : 'PILLAR';
+                        sessionModeSpan.textContent = modeDisplay;
+                    } else {
+                        currentSessionDiv.style.display = 'none';
+                    }
+                    
+                    if (data.bots && data.bots.length > 0) {
+                        botListDiv.innerHTML = data.bots.map(bot => `
+                            <div class="bot-item">
+                                <span class="bot-id">#${String(bot.id).padStart(3,'0')}</span>
+                                <span class="bot-mode ${bot.mode}">${bot.mode.toUpperCase()}</span>
+                                ${bot.cycle ? '<span class="bot-cycle">🔄</span>' : ''}
+                                <span class="bot-status"></span>
+                                <button class="kill-bot-btn" onclick="killBot(${bot.id})">KILL</button>
+                            </div>
+                        `).join('');
+                    } else {
+                        botListDiv.innerHTML = '<div class="bot-item" style="justify-content: center;">🤖 NO ACTIVE BOTS</div>';
+                    }
+                }
+            } catch (e) { addLog('Failed to fetch status', 'error'); }
+        }
+        
+        window.killBot = async function(botId) {
+            try {
+                await fetch(`/api/kill/${botId}`, { method: 'POST' });
+                addLog(`Killed bot #${botId}`, 'warning');
+                fetchStatus();
+            } catch (e) { addLog(`Failed to kill bot #${botId}`, 'error'); }
+        };
+        
+        async function killAllBots() {
+            try {
+                const res = await fetch('/api/kill-all', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) { addLog(data.message, 'warning'); fetchStatus(); }
+            } catch (e) { addLog('Failed to kill all bots', 'error'); }
+        }
+        
+        async function logout() {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        }
+        
+        // ==================== UI EVENT HANDLERS ====================
+        rejoinDelay.addEventListener('input', () => {
+            delayValue.textContent = rejoinDelay.value + 'ms';
+        });
+        
+        function previewConvertUrl(input) {
+            const tag = extractTagFromInput(input);
+            if (tag) {
+                if (input.includes('/experimental')) {
+                    return `🔗 https://voxiom.io/experimental/#${tag} (FFA)`;
+                }
+                return `🔗 https://voxiom.io/#${tag}`;
+            }
+            return null;
         }
         
         serverUrlInput.addEventListener('input', () => {
-            const converted = previewConvertUrl(serverUrlInput.value);
-            if (converted && converted !== serverUrlInput.value) {
-                urlPreview.textContent = `→ ${converted}`;
+            const preview = previewConvertUrl(serverUrlInput.value);
+            if (preview) {
+                urlPreview.textContent = preview;
                 urlPreview.classList.add('show');
+                urlPreview.style.color = '#00ff88';
+            } else if (serverUrlInput.value.trim().length > 0) {
+                urlPreview.textContent = '⚠️ Invalid format. Use 5-char code like "v4Hgu"';
+                urlPreview.classList.add('show');
+                urlPreview.style.color = '#ffaa00';
             } else {
                 urlPreview.classList.remove('show');
             }
@@ -464,127 +1065,81 @@
                 modeButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentMode = btn.dataset.mode;
-                addLog(`Switched to ${btn.textContent} mode`, 'info');
+                modeDesc.textContent = modeDescriptions[currentMode];
+                let modeName = currentMode === 'lag' ? 'LAG' : 'PILLAR';
+                addLog(`Switched to ${modeName} mode`, 'info');
                 if (currentMode === 'pillar') {
-                    addLog(`🔒 SLOT BLOCKING: Bots will reserve slots 0-19, preventing real players from joining!`, 'success');
+                    addLog(`🔒 PILLAR mode: Slot blocking ACTIVE - Real players cannot join the server!`, 'success');
                 }
             });
         });
         
-        async function fetchStatus() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                if (data.success) {
-                    activeBotsSpan.textContent = data.active;
-                    totalBotsSpan.textContent = data.total;
-                    killAllBtn.disabled = data.active === 0;
-                    if (data.currentUrl && data.sessionActive) {
-                        currentSessionDiv.style.display = 'block';
-                        sessionUrlSpan.textContent = data.currentUrl.replace('wss://', '').replace(':443', '');
-                        let modeDisplay = data.currentMode === 'lag' ? 'LAG' : 'PILLAR';
-                        sessionModeSpan.textContent = modeDisplay;
-                        if (data.slotsFilled > 0) {
-                            slotInfo.style.display = 'inline-block';
-                            slotInfo.textContent = `🔒 ${data.slotsFilled}/20 slots blocked`;
-                        } else {
-                            slotInfo.style.display = 'none';
-                        }
-                    } else {
-                        currentSessionDiv.style.display = 'none';
-                    }
-                    if (data.bots && data.bots.length > 0) {
-                        botListDiv.innerHTML = data.bots.map(bot => `
-                            <div class="bot-item">
-                                <span class="bot-id">#${String(bot.id).padStart(3,'0')}</span>
-                                <span class="bot-mode">${bot.mode.toUpperCase()}</span>
-                                ${bot.assignedSlot !== null ? `<span class="bot-slot">SLOT ${bot.assignedSlot + 1}</span>` : ''}
-                                ${bot.cycle ? '<span class="bot-cycle">♾️</span>' : ''}
-                                <span class="bot-status"></span>
-                                <button class="kill-bot-btn" onclick="killBot(${bot.id})">KILL</button>
-                            </div>
-                        `).join('');
-                    } else {
-                        botListDiv.innerHTML = '<div class="bot-item" style="justify-content: center;">NO ACTIVE BOTS</div>';
-                    }
-                }
-            } catch (e) { addLog('Failed to fetch status', 'error'); }
-        }
+        // ==================== SELECTOR PANEL EVENTS ====================
+        let selectorExpanded = true;
+        selectorHeader.addEventListener('click', () => {
+            selectorExpanded = !selectorExpanded;
+            selectorContent.classList.toggle('show', selectorExpanded);
+            selectorToggle.textContent = selectorExpanded ? '▼' : '▲';
+        });
+        selectorContent.classList.add('show');
         
-        async function killBot(botId) {
-            try {
-                await fetch(`/api/kill/${botId}`, { method: 'POST' });
-                addLog(`Killed bot #${botId}`, 'warning');
-                fetchStatus();
-            } catch (e) { addLog(`Failed to kill bot #${botId}`, 'error'); }
-        }
-        window.killBot = killBot;
-        
-        async function deployBots() {
-            if (isDeploying) return;
-            const url = serverUrlInput.value.trim();
-            const count = parseInt(botCountInput.value);
-            const timer = parseInt(botTimerInput.value);
-            const cycle = cycleCheckbox.checked;
-            const delay = parseInt(rejoinDelay.value);
-            if (!url) { addLog('Enter a game link or server ID', 'error'); return; }
-            if (count < 1) { addLog('Bot count must be at least 1', 'error'); return; }
-            
-            isDeploying = true;
-            deployBtn.disabled = true;
-            deployBtn.textContent = 'DEPLOYING...';
-            addLog(`Deploying ${count} bot(s) in ${currentMode.toUpperCase()} mode with ${delay}ms rejoin delay...`, 'info');
-            if (cycle) {
-                addLog(`♾️ FOREVER CYCLE MODE ENABLED - Bots will rejoin indefinitely until killed!`, 'success');
+        selectAllRegions.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedRegions = new Set(REGIONS.map(r => r.id));
+                document.querySelectorAll('#regionsContainer input').forEach(cb => cb.checked = true);
+            } else {
+                selectedRegions.clear();
+                document.querySelectorAll('#regionsContainer input').forEach(cb => cb.checked = false);
             }
-            if (currentMode === 'pillar') {
-                addLog(`🔒 Slot blocking ACTIVE - Real players cannot join while bots occupy slots!`, 'success');
+            updateSelectedPreview();
+            // If something is selected, use selector mode
+            if (selectedRegions.size > 0 && selectedModes.size > 0) {
+                setUsingSelector(true);
+            } else {
+                setUsingSelector(false);
             }
-            
-            try {
-                const res = await fetch('/api/deploy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url, count, mode: currentMode, timer, cycle, rejoinDelay: delay })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    addLog(data.message, 'success');
-                    fetchStatus();
-                } else {
-                    addLog(data.error || 'Deployment failed', 'error');
-                }
-            } catch (e) {
-                addLog('Deployment error', 'error');
-            } finally {
-                isDeploying = false;
-                deployBtn.disabled = false;
-                deployBtn.textContent = 'DEPLOY';
+        });
+        
+        selectAllModes.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedModes = new Set(GAME_MODES.map(m => m.id));
+                document.querySelectorAll('#modesContainer input').forEach(cb => cb.checked = true);
+            } else {
+                selectedModes.clear();
+                document.querySelectorAll('#modesContainer input').forEach(cb => cb.checked = false);
             }
-        }
+            updateSelectedPreview();
+            if (selectedRegions.size > 0 && selectedModes.size > 0) {
+                setUsingSelector(true);
+            } else {
+                setUsingSelector(false);
+            }
+        });
         
-        async function killAllBots() {
-            try {
-                const res = await fetch('/api/kill-all', { method: 'POST' });
-                const data = await res.json();
-                if (data.success) { addLog(data.message, 'warning'); fetchStatus(); }
-            } catch (e) { addLog('Failed to kill all bots', 'error'); }
-        }
+        clearSelectionBtn.addEventListener('click', clearSelection);
         
-        async function logout() {
-            await fetch('/auth/logout', { method: 'POST' });
-            window.location.href = '/login.html';
-        }
+        applySelectionBtn.addEventListener('click', () => {
+            if (selectedRegions.size === 0 || selectedModes.size === 0) {
+                addLog('Please select at least one region and one gamemode', 'error');
+                return;
+            }
+            addLog(`Applying: ${selectedRegions.size} region(s) × ${selectedModes.size} mode(s)`, 'success');
+            setUsingSelector(true);
+            deployToSelectedServers();
+        });
         
-        deployBtn.addEventListener('click', deployBots);
-        killAllBtn.addEventListener('click', killAllBots);
-        refreshBtn.addEventListener('click', fetchStatus);
-        logoutBtn.addEventListener('click', logout);
-        serverUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') deployBots(); });
+        // ==================== INITIALIZATION ====================
+        renderRegions();
+        renderModes();
+        selectAllRegions.checked = true;
+        selectAllModes.checked = true;
+        updateSelectedPreview();
+        modeDesc.textContent = modeDescriptions.lag;
         
-        addLog('Bot Manager Ready - NO LIMITS', 'success');
-        addLog('♾️ FOREVER CYCLE MODE: Bots will rejoin indefinitely', 'info');
-        addLog('⚡ Rejoin delay: 0-5000ms (0 = instant reconnect)', 'info');
+        addLog('✅ Bot Manager v10 Ready', 'success');
+        addLog('📍 FFA → experimental/#XXXXX | Others → /#XXXXX', 'info');
+        addLog('🎮 Use top-left selector to deploy to multiple servers at once', 'success');
+        
         fetchStatus();
         statusInterval = setInterval(fetchStatus, 5000);
     </script>
