@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', true);
 
 // ==================== DISCORD WEBHOOK ====================
-const DISCORD_WEBHOOK = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1535445793333575723/0gXx8IvoTXo3xxKaXtmzN_E0tRbCFc0opTAVU0wdDxiDaAwyA71NTnwZgQG89TRkzU-M';
 
 // ==================== SMART LOGGING STATE ====================
 const visitedIPs = new Map(); // ip -> { firstSeen, lastSeen, count, referrers: Set }
